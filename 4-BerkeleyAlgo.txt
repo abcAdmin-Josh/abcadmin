@@ -1,3 +1,100 @@
+
+Start the server by running python berkeley_server.py in one terminal.
+In multiple terminals, start the clients by running python berkeley_client.py in each terminal.
+
+berkeley_server.py
+
+import socket
+import threading
+import time
+
+# Global variables
+reference_times = []
+lock = threading.Lock()
+
+def client_handler(client_socket, client_address):
+    global reference_times, lock
+
+    # Receive the client's local time
+    client_time = float(client_socket.recv(1024).decode())
+
+    # Acquire lock to access shared reference_times list
+    lock.acquire()
+
+    # Add client's local time to the reference_times list
+    reference_times.append(client_time)
+
+    # Release the lock
+    lock.release()
+
+    # Send the reference time to the client
+    client_socket.sendall(str(time.time()).encode())
+
+    # Close the client socket
+    client_socket.close()
+
+def start_server():
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind(('localhost', 5000))
+    server_socket.listen(5)
+
+    print("Server started and listening on port 5000...")
+
+    while True:
+        client_socket, client_address = server_socket.accept()
+        print("Accepted connection from:", client_address)
+
+        # Create a new thread to handle the client
+        thread = threading.Thread(target=client_handler, args=(client_socket, client_address))
+        thread.start()
+
+    server_socket.close()
+
+if __name__ == '__main__':
+    start_server()
+    
+    
+    
+
+berkeley_client.py
+
+import socket
+import time
+
+def synchronize_clock(server_address):
+    # Connect to the server
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.connect((server_address, 5000))
+
+    # Send the local time to the server
+    local_time = time.time()
+    client_socket.sendall(str(local_time).encode())
+
+    # Receive the server's reference time
+    reference_time = float(client_socket.recv(1024).decode())
+
+    # Calculate the clock offset
+    offset = reference_time - local_time
+
+    # Adjust the local time
+    adjusted_time = local_time + offset
+
+    print("Local Time:", local_time)
+    print("Adjusted Time:", adjusted_time)
+    print("Clock Offset:", offset)
+
+    # Close the client socket
+    client_socket.close()
+
+if __name__ == '__main__':
+    server_address = 'localhost'  # Change to the server IP address or hostname
+    synchronize_clock(server_address)
+    
+
+____________________________________________________________________________________________________________________-
+
+
+__________________________________________________________________________________________________________________
 Windows
 
 run python Server.py
