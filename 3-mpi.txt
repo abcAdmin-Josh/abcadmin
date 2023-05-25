@@ -1,8 +1,10 @@
-mpicc mpi_sum.c -o mpi_sum
+mpicc arr_sum.c -o mpi_sum
 mpirun -np 4 ./mpi_sum
 
 ______________________________________________
 gpt
+mpicc mpi_sum.c -o mpi_sum
+mpirun -np 4 ./mpi_sum
 
 #include <stdio.h>
 #include <mpi.h>
