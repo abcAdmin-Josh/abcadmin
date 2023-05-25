@@ -1,6 +1,7 @@
 Windows
 
 run python Server.py
+another cmd
 run python Client.py 
 
 ___________________________________________________________________________________________
