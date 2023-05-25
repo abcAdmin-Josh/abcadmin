@@ -1,0 +1,67 @@
+Ubuntu
+
+python RingToken.py 
+
+
+________________________________________________________________________________
+RingToken.py 
+
+import threading
+import time
+
+class TokenRing:
+    def __init__(self, num_nodes):
+        self.num_nodes = num_nodes
+        self.node_index = 0
+        self.token = threading.Event()
+        self.lock = threading.Lock()
+        self.in_cs = False
+
+    def start(self):
+        threads = []
+        
+        # Create and start threads for each node
+        for i in range(self.num_nodes):
+            t = threading.Thread(target=self.node, args=(i,))
+            threads.append(t)
+            t.start()
+
+        # Start the token at the first node
+        self.token.set()
+
+        # Wait for all threads to complete
+        for t in threads:
+            t.join()
+
+    def node(self, node_id):
+        while True:
+            # Wait for the token
+            self.token.wait()
+
+            # Check if this node is the next in the ring
+            if self.node_index == node_id:
+                self.token.clear()
+                self.lock.acquire()
+                self.in_cs = True
+
+                # Critical Section
+                print(f"Node {node_id} entered the critical section.")
+                time.sleep(1)  # Simulating some work in the critical section
+                print(f"Node {node_id} exited the critical section.")
+
+                self.in_cs = False
+                self.lock.release()
+                self.node_index = (self.node_index + 1) % self.num_nodes
+                self.token.set()
+
+            else:
+                # Pass the token to the next node
+                self.token.clear()
+                self.node_index = (self.node_index + 1) % self.num_nodes
+                self.token.set()
+
+            time.sleep(0.5)  # Delay between iterations
+
+# Example usage with 4 nodes
+ring = TokenRing(4)
+ring.start() 

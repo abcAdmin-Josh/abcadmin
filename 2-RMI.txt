@@ -1,0 +1,92 @@
+javac Server.java
+java Server
+
+another terminal
+javac Client.java
+java client 
+
+
+
+
+______________________________________________________________________________________
+javac RMIServer.java
+javac RMIClient.java
+
+rmiregistry
+
+java RMIServer
+
+java RMIClient
+
+
+
+________________________________________________________________________________________________________ 
+Server
+
+
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+
+// Create an interface for remote methods
+interface RemoteInterface extends Remote {
+    void sendMessage(String message) throws RemoteException;
+}
+
+// Implement the remote interface
+class RemoteImplementation extends UnicastRemoteObject implements RemoteInterface {
+    RemoteImplementation() throws RemoteException {
+        super();
+    }
+
+    public void sendMessage(String message) {
+        System.out.println("Received message: " + message);
+    }
+}
+
+public class RMIServer {
+    public static void main(String[] args) {
+        try {
+            // Create an instance of the remote implementation
+            RemoteImplementation remoteObj = new RemoteImplementation();
+
+            // Export the remote object to make it available for incoming remote invocations
+            RemoteInterface stub = (RemoteInterface) UnicastRemoteObject.exportObject(remoteObj, 0);
+
+            // Bind the stub to the registry
+            Registry registry = LocateRegistry.createRegistry(1099);
+            registry.bind("RemoteInterface", stub);
+
+            System.out.println("Server is running and waiting for incoming connections...");
+        } catch (Exception e) {
+            System.err.println("Server exception: " + e.toString());
+            e.printStackTrace();
+        }
+    }
+}
+
+_______________________________________________________________________________________________________________________________
+CLient
+
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+
+public class RMIClient {
+    public static void main(String[] args) {
+        try {
+            // Get the registry
+            Registry registry = LocateRegistry.getRegistry("localhost", 1099);
+
+            // Look up the remote interface
+            RemoteInterface remoteObj = (RemoteInterface) registry.lookup("RemoteInterface");
+
+            // Call the remote method
+            remoteObj.sendMessage("Hello, Server!");
+        } catch (Exception e) {
+            System.err.println("Client exception: " + e.toString());
+            e.printStackTrace();
+        }
+    }
+}

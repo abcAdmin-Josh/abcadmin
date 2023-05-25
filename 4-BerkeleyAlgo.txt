@@ -1,0 +1,86 @@
+Windows
+
+run python Server.py
+run python Client.py 
+
+___________________________________________________________________________________________
+
+
+Server
+
+import socket
+import time
+
+def server():
+    # Create a TCP/IP socket
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    
+    # Bind the socket to a specific address and port
+    server_address = ('localhost', 12345)
+    server_socket.bind(server_address)
+    
+    # Listen for incoming connections
+    server_socket.listen(1)
+    
+    while True:
+        print('Waiting for a client connection...')
+        
+        # Accept a client connection
+        client_socket, client_address = server_socket.accept()
+        print('Accepted connection from:', client_address)
+        
+        # Receive the client's time request
+        data = client_socket.recv(1024)
+        client_time = float(data.decode())
+        
+        # Get the server's time
+        server_time = time.time()
+        
+        # Send the server's time back to the client
+        client_socket.sendall(str(server_time).encode())
+        
+        # Calculate the time difference between the client and server
+        time_diff = server_time - client_time
+        print('Time difference:', time_diff, 'seconds')
+        
+        # Close the client socket
+        client_socket.close()
+
+# Run the server
+server()
+
+__________________________________________________________________________________________________
+
+Client
+
+import socket
+import time
+
+def client():
+    # Create a TCP/IP socket
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    
+    # Connect the socket to the server's address and port
+    server_address = ('localhost', 12345)
+    client_socket.connect(server_address)
+    
+    # Get the client's time
+    client_time = time.time()
+    
+    # Send the client's time to the server
+    client_socket.sendall(str(client_time).encode())
+    
+    # Receive the server's time
+    data = client_socket.recv(1024)
+    server_time = float(data.decode())
+    
+    # Calculate the time difference between the client and server
+    time_diff = server_time - client_time
+    print('Time difference:', time_diff, 'seconds')
+    
+    # Close the client socket
+    client_socket.close()
+
+# Run the client
+client()
+__________________________________________________________________________________________________   
